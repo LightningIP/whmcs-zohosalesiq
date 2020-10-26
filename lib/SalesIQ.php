@@ -23,13 +23,41 @@ class SalesIQ {
     }
 
     /**
+     * Get Domain from the database
+     */
+    private static function getDomain($vars = NULL) {
+        return DB::table('tbladdonmodules')
+            ->where([
+                ['module',  '=', self::MODULE_NAME],
+                ['setting', '=', 'option2'],
+            ])
+            ->select('value')
+            ->first()
+            ->value;
+    }
+
+    /**
      * https://developers.whmcs.com/hooks-reference/output/#clientareafooteroutput
      */
     public static function ClientAreaFooterOutput($vars) {
         $currentUser = new CurrentUser;
+
+        // Get Code
         try {
             $code = self::getWidgetCode();
-            $isAdminUser = false; //($currentUser->isAuthenticatedAdmin() || $currentUser->isMasqueradingAdmin());
+        } catch (\Exception $e) {
+            logActivity(self::MODULE_NAME . ": {$e->getMessage}", 0);
+        }
+
+        // Get Domain
+        try {
+            $domain = self::getDomain();
+        } catch (\Exception $e) {
+            logActivity(self::MODULE_NAME . ": {$e->getMessage}", 0);
+        }
+
+        try {
+            $isAdminUser = ($currentUser->isAuthenticatedAdmin() || $currentUser->isMasqueradingAdmin());
             if (!empty($code) && $currentUser->isAuthenticatedUser() && !$isAdminUser ) {
                 $html = '<script type="text/javascript">';
                 $html .= '  var $zoho = $zoho || {};';
@@ -42,6 +70,9 @@ class SalesIQ {
                 $html .= '          $zoho.salesiq.visitor.contactnumber("'. $currentUser->client()->phonenumber .'");';
                 if ($currentUser->client()->companyname) {
                     $html .= '          $zoho.salesiq.visitor.info({"Company" : "'.$currentUser->client()->companyname.'",});';
+                }
+                if ($domain) {
+                    $html .= '          $zoho.salesiq.domain("'.$domain.'");';
                 }
                 $html .= '      }';
                 $html .= '  };';

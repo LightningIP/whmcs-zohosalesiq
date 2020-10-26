@@ -13,9 +13,16 @@ function zoho_salesiq_config() {
             "option1" => [
                 "FriendlyName"  => "SalesIQ Widget Code",
                 "Type"          => "text",
-                "Size"          => "25",
+                "Size"          => "50",
                 "Description"   => "Enter just the salesiq widget code",
-                "Default"       => "Example"
+                "Default"       => ""
+            ],
+            "domain" => [
+                "FriendlyName"  => "SalesIQ Domain",
+                "Type"          => "text",
+                "Size"          => "50",
+                "Description"   => "Enter the parent domain to link SalesIQ cookies to.",
+                "Default"       => ""
             ]
         ]
     ];
